@@ -1,14 +1,14 @@
-import contextlib
+import os
+import weakref
 
 
 class TempFile:
-    def __new__(cls, *args, **kwargs):
-        instance = super().__new__(cls)
-        return contextlib.closing(instance)
-
     def __init__(self, path) -> None:
         super().__init__()
         self._f = open(path, 'wb')
+        weakref.finalize(self, self._remove, self._f)
 
-    def close(self):
-        self._f.close()
+    @staticmethod
+    def _remove(file):
+        file.close()
+        os.remove(file.name)
