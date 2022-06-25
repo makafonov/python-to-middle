@@ -1,18 +1,21 @@
 import json
 from collections import namedtuple
 from operator import attrgetter
+from typing import Callable
+from typing import Iterable
 from typing import Optional
 
 
-sorting = namedtuple('Sorting', ['name', 'reverse'])
+sorting = namedtuple('sorting', ['name', 'reverse'])
 
 
-def validate_column_name(method):
+def validate_column_name(method: Callable):
     def wrapper(self, *args, **kwargs):
         for arg in args:
             if arg not in self._columns:
                 raise ValueError(f'Неверно указан заголовок столбца: {arg}')
         return method(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -33,12 +36,13 @@ class Row:
         self.__dict__.update(data)
         self.selected = False
 
+
 class Table:
     def __init__(self) -> None:
         self.sorting: Optional[sorting] = None
-        self._columns = {}
-        self._column_positions = []
-        self._rows = []
+        self._columns: dict[str, Column] = {}
+        self._column_positions: list[str] = []
+        self._rows: list[Row] = []
 
     def load_data(self, data):
         json_data = json.loads(data)
@@ -70,30 +74,33 @@ class Table:
             )
         )
 
-    def render(self):
+    @property
+    def _visible_columns(self) -> Iterable[str]:
+        return filter(
+            lambda name: not self._columns[name].hidden,
+            self._column_positions,
+        )
+
+    def render(self) -> None:
         for row in self.prepare():
             row_text = ''
-            for column_name in self._column_positions:
+            for column_name in self._visible_columns:
                 column = self._columns[column_name]
-                if column.hidden:
-                    continue
-                cell_value = row[column.name]
+                cell_value = row[column_name]
                 row_text += (
                     f'| {str(cell_value):{column.max_length}} '
                     if cell_value is not None
                     else '| None '
                 )
-            print(row_text)
+            print(row_text, end='|\n')
 
-    def prepare(self):
+    def prepare(self) -> list:
         result = []
         for row in self._sorted_rows:
             obj = {}
             skip = False
-            for column_name in self._column_positions:
+            for column_name in self._visible_columns:
                 column = self._columns[column_name]
-                if column.hidden:
-                    continue
                 cell_value = getattr(row, column.name)
                 if column.filter_ and not column.filter_(cell_value):
                     skip = True
@@ -102,7 +109,6 @@ class Table:
             if not skip:
                 result.append(obj)
         return result
-
 
     @validate_column_name
     def switch_columns(self, name1: str, name2: str) -> None:
@@ -127,12 +133,12 @@ class Table:
             raise ValueError('Скрытый столбец нельзя сортировать')
         self.sorting = sorting(column_name, reverse)
 
-    def select_row(self, number):
-        if 0 > number > len(self._rows) - 1:
+    def select_row(self, number: int) -> None:
+        if 0 > number > len(self.prepare()) - 1:
             raise ValueError('Укажите корректный номер строки')
         self._rows[number].selected = True
 
-    def delete_row(self):
+    def delete_row(self) -> None:
         self._rows = list(filter(lambda row: row.selected, self._rows))
 
 
