@@ -7,6 +7,13 @@ class CardType(Enum):
     GOLD = 3
 
 
+DISCOUNT_MAP = {
+    CardType.BRONZE: 5,
+    CardType.SILVER: 10,
+    CardType.GOLD: 15,
+}
+
+
 class Product(Enum):
     A = 10000
     B = 20000
@@ -15,32 +22,19 @@ class Product(Enum):
 
 class CashBox:
 
+    def get_product_cost(self, product):
+        if not isinstance(product, Product):
+            raise TypeError
+        return Product[product.name].value
+
+    def get_discount(self, card_type, default=5):
+        if not isinstance(card_type, CardType):
+            raise TypeError
+        return default + DISCOUNT_MAP[card_type]
+
     def get_total_sum(self, product, card_type):
-        if product == Product.A:
-            cost = Product.A.value
-        elif product == Product.B:
-            cost = Product.B.value
-        elif product == Product.C:
-            cost = Product.C.value
-        else:
-            cost = 0
-
-        discount = 5
-
-        if card_type == CardType.BRONZE:
-            discount += 5
-
-        elif card_type == CardType.SILVER:
-            discount += 10
-
-        elif card_type == CardType.GOLD:
-            discount += 15
-
+        cost = self.get_product_cost(product)
+        discount = self.get_discount(card_type)
         total_sum = cost - (cost * discount / 100.0)
 
         return total_sum
-
-
-
-
-

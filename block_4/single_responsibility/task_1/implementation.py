@@ -17,6 +17,7 @@ class RecordStore:
     def __init__(self) -> None:
         super().__init__()
         self._records = []
+        self.formatter = RecordStoreFormatter(self)
 
     def add_record(self, record):
         self._records.append(record)
@@ -25,7 +26,18 @@ class RecordStore:
         self._records.remove(record)
 
     def to_json(self):
-        result = json.dumps([x.as_dict() for x in self._records])
+        return self.formatter.to_json()
+
+    def save_to_file(self, path):
+        self.formatter.save_to_file(path)
+
+
+class RecordStoreFormatter:
+    def __init__(self, store: RecordStore) -> None:
+        self.store = store
+
+    def to_json(self):
+        result = json.dumps([x.as_dict() for x in self.store._records])
 
         return result
 
