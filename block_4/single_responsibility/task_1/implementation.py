@@ -31,13 +31,17 @@ class RecordStore:
     def save_to_file(self, path):
         self.formatter.save_to_file(path)
 
+    @property
+    def records(self):
+        return self._records
+
 
 class RecordStoreFormatter:
     def __init__(self, store: RecordStore) -> None:
         self.store = store
 
     def to_json(self):
-        result = json.dumps([x.as_dict() for x in self.store._records])
+        result = json.dumps([x.as_dict() for x in self.store.records])
 
         return result
 
