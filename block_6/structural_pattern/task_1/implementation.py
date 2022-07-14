@@ -1,12 +1,13 @@
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 
 
 class Visa:
-    """Интерфейс платежной системы Visa"""
+    """Интерфейс платежной системы Visa."""
 
     def __init__(self, user_id, start_balance):
-        """
-            Инициализация класса
+        """Инициализация класса.
+
         :param user_id: Идентификатор пользователя
         :param start_balance: Стартовый баланс
         """
@@ -14,22 +15,22 @@ class Visa:
         self.current_balance = start_balance
 
     def transfer_money(self, amount):
-        """
-            Перевод денег из системы
+        """Перевод денег из системы.
+
         :param amount: количество денег для перевода
         """
         self.current_balance -= amount
 
     def receive_money(self, amount):
-        """
-            Поревод денег в систему
+        """Перевод денег в систему.
+
         :param amount: количество денег для перевода
         """
         self.current_balance += amount
 
     @property
     def balance(self):
-        """Текущий баланс"""
+        """Текущий баланс."""
         return self.current_balance
 
 
@@ -37,8 +38,8 @@ class MasterCard:
     """Интерфейс платежной системы MasterCard"""
 
     def __init__(self, inn, money):
-        """
-            Инициализация класса
+        """Инициализация класса.
+
         :param inn: ИНН пользователя
         :param money: Начальное количество денег на счету
         """
@@ -46,22 +47,22 @@ class MasterCard:
         self.money = money
 
     def take(self, quantity):
-        """
-            Извлечение денег из системы
+        """Извлечение денег из системы.
+
         :param quantity: количество извлеченных денег
         """
         self.money -= quantity
 
     def put(self, quantity):
-        """
-            Перемещение денег в систему
+        """Перемещение денег в систему.
+
         :param quantity: количество перемещенных денег
         """
         self.money += quantity
 
     def current_money(self):
-        """
-            Запрос текущего количества денег на счете
+        """Запрос текущего количества денег на счете.
+
         :return: количество денег на счете
         """
         return self.money
@@ -70,41 +71,55 @@ class MasterCard:
 class PaymentAdapter(ABC):
 
     def __init__(self, payment_system):
-        """
-            Инициализация класса
+        """Инициализация класса.
+
         :param payment_system: платежная система
         """
         self.payment_system = payment_system
 
     @abstractmethod
     def send(self, money):
-        """
-            Снятие деньг со счета
+        """Снятие деньг со счета.
+
         :param money: количество денег для снятия
         """
-        pass
 
     @abstractmethod
     def receive(self, money):
-        """
-            Получение денег на счет
+        """Получение денег на счет.
+
         :param money: количество денег для получения
         """
-        pass
 
     @property
     @abstractmethod
     def money(self):
-        """Получение текущего баланса"""
-        pass
+        """Получение текущего баланса."""
 
 
 class VisaPaymentAdapter(PaymentAdapter):
-    """Адаптер платежной системы Visa"""
-    # нужно добавить свой код сюда
+    """Адаптер платежной системы Visa."""
+
+    def send(self, money):
+        self.payment_system.transfer_money(money)
+
+    def receive(self, money):
+        self.payment_system.receive_money(money)
+
+    @property
+    def money(self):
+        return self.payment_system.balance
 
 
 class MasterCardPaymentAdapter(PaymentAdapter):
-    """Адаптер платежной системы MasterCard"""
-    # нужно добавить свой код сюда
+    """Адаптер платежной системы MasterCard."""
 
+    def send(self, money):
+        self.payment_system.take(money)
+
+    def receive(self, money):
+        self.payment_system.put(money)
+
+    @property
+    def money(self):
+        return self.payment_system.current_money()
