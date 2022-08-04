@@ -23,25 +23,21 @@ class Customer(models.Model):
 
     def fix_reg_date(self):
         self.registration_date = date.today()
-        self.save()
 
     def change_rating(self, new_rating):
         if new_rating < 0:
             raise ValueError('Рейтинг не может быть нижен 0')
 
         self.rating = new_rating
-        self.save()
 
     def change_name(self, new_name):
         self.name = new_name
-        self.save()
 
     def change_email(self, new_email):
         if '@' not in new_email:
             raise ValueError('Email должен содержать знак @')
 
         self.email = new_email
-        self.save()
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         super().save(force_insert, force_update, using, update_fields)
