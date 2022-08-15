@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
     'block_8.acid.task_1.apps.ACIDTask1Config',
     'block_8.mvcc.task_1.apps.MVCCTask1Config',
     'block_8.locks.task_1.apps.LocksTask1Config',
