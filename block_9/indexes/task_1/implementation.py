@@ -1,7 +1,5 @@
 from django.db.models import (
-    Func,
     QuerySet,
-    Value, Q,
 )
 
 from block_9.indexes.task_1.models import (
@@ -10,25 +8,18 @@ from block_9.indexes.task_1.models import (
 
 
 def filter_by_fio(fio) -> QuerySet:
-    """Возвращает сотрудников, отфильтрованных по ФИО."""
-    employees = Employee.objects.annotate(
-        fio=Func(
-            Value(' '),
-            'fname',
-            'iname',
-            'oname',
-            function='concat_ws',
-        ),
+    """Возвращает сотрудников, отфильтрованных по ФИО.
+
+    Index Scan using fio_idx on public.indexes_employees  (cost=0.41..8.43 rows=1 width=111) (actual time=0.028..0.035 rows=0 loops=1)
+      Output: id, inn, fname, iname, oname, country, department_id, position_id, begin, "end", additional_info
+      Index Cond: ((((((indexes_employees.fname)::text || ' '::text) || (indexes_employees.iname)::text) || ' '::text) || (indexes_employees.oname)::text) = 'Иванов Иван Иванович'::text)
+    Planning Time: 0.192 ms
+    Execution Time: 0.082 ms
+    """
+    return Employee.objects.extra(
+        where=["fname || ' ' || iname || ' ' || oname = %s"],
+        params=[fio],
     )
-
-    _fio = fio.split()
-    if len(_fio) == 3:
-        fname, iname, oname = _fio
-        qs_filter = Q(fname=fname, iname=iname, oname=oname)
-    else:
-        qs_filter = Q(fio=fio)
-
-    return employees.filter(qs_filter)
 
 
 def filter_works_by_period(begin, end) -> QuerySet:

@@ -24,11 +24,6 @@ class Employee(models.Model):
     class Meta:
         db_table = 'indexes_employees'
         indexes = [
-            # fio
-            models.Index(fields=['fname']),
-            models.Index(fields=['iname']),
-            models.Index(fields=['oname']),
-
             # period
             models.Index(fields=['begin']),
             models.Index(fields=['end']),
